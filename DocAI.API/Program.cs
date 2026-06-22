@@ -97,7 +97,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("Angular");
-app.UseHttpsRedirection();
+
+// Skip HTTPS redirection when running behind a reverse proxy (e.g. Docker + Nginx)
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -11,6 +11,7 @@
 # Secrets (NEVER commit these)
 appsettings.Production.json
 appsettings.Secrets.json
+.env
 
 # Angular
 DocAI.Angular/node_modules/
