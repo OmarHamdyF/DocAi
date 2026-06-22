@@ -1,0 +1,117 @@
+<div class="dashboard-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Overview of patient cases and AI audit activity</p>
+    </div>
+    <button pButton label="New Case" icon="pi pi-plus" class="p-button-primary" (click)="newCase()"></button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <i class="pi pi-folder"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats().totalCases }}</span>
+        <span class="stat-label">Total Cases</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value text-green">{{ stats().approvedCases }}</span>
+        <span class="stat-label">Approved</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <i class="pi pi-clock"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value text-orange">{{ stats().pendingReviewCases }}</span>
+        <span class="stat-label">Pending Review</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon red">
+        <i class="pi pi-times-circle"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value text-red">{{ stats().rejectedCases }}</span>
+        <span class="stat-label">Rejected</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <i class="pi pi-chart-bar"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value text-purple">{{ stats().avgAcceptanceRate | number:'1.0-1' }}%</span>
+        <span class="stat-label">Avg Acceptance Rate</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Cases Table -->
+  <div class="section-card">
+    <div class="section-header">
+      <h2>Recent Cases</h2>
+    </div>
+
+    <div class="loading-wrapper" *ngIf="loading()">
+      <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    </div>
+
+    <p-table [value]="recentCases()" *ngIf="!loading()" [tableStyle]="{'min-width': '60rem'}"
+      styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Patient Name</th>
+          <th>Diagnosis</th>
+          <th>Status</th>
+          <th>Acceptance Rate</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-case>
+        <tr>
+          <td>
+            <div class="patient-name">
+              <i class="pi pi-user"></i>
+              {{ case.patientName }}
+            </div>
+          </td>
+          <td>{{ case.provisionalDiagnosis || '-' }}</td>
+          <td>
+            <p-tag [value]="case.status" [severity]="getStatusSeverity(case.status)"></p-tag>
+          </td>
+          <td>{{ case.acceptanceRate != null ? (case.acceptanceRate + '%') : '-' }}</td>
+          <td>
+            <div class="action-btns">
+              <button pButton icon="pi pi-eye" class="p-button-text p-button-sm"
+                (click)="viewCase(case.id)" pTooltip="View Case"></button>
+              <button pButton icon="pi pi-chart-line" class="p-button-text p-button-sm p-button-info"
+                (click)="viewAudit(case.id)" pTooltip="View Audit"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center p-4">
+            <i class="pi pi-inbox" style="font-size: 2rem; color: #94a3b8;"></i>
+            <p style="color: #64748b; margin-top: 0.5rem;">No cases found. Create your first case!</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

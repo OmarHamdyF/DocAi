@@ -1,0 +1,237 @@
+<div class="audit-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">AI Audit Report</h1>
+      <p class="page-subtitle" *ngIf="patientCase()">
+        Patient: <strong>{{ patientCase()?.patientName }}</strong> &mdash; {{ patientCase()?.provisionalDiagnosis || 'No diagnosis' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button pButton label="View Case" icon="pi pi-eye" class="p-button-outlined"
+        (click)="viewCase()"></button>
+      <button pButton label="Approval Workflow" icon="pi pi-check-circle" class="p-button-outlined p-button-success"
+        *ngIf="auditReport()" (click)="goToApproval()"></button>
+    </div>
+  </div>
+
+  <div class="loading-wrapper" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    <p>Loading audit report...</p>
+  </div>
+
+  <!-- No Audit Yet -->
+  <div class="no-audit-card" *ngIf="!loading() && !auditReport()">
+    <i class="pi pi-bolt no-audit-icon"></i>
+    <h2>No Audit Report Yet</h2>
+    <p>Generate an AI-powered audit report for this patient case to identify documentation quality, clinical consistency, and care plan alignment.</p>
+    <button pButton label="Generate AI Audit" icon="pi pi-bolt" class="p-button-primary p-button-lg"
+      (click)="generateAudit()" [loading]="generating()"></button>
+  </div>
+
+  <!-- Audit Report -->
+  <div *ngIf="!loading() && auditReport() as report">
+
+    <!-- Score Summary -->
+    <div class="scores-grid">
+      <div class="score-card">
+        <span class="score-label">Documentation</span>
+        <p-tag [value]="report.documentationScore + '/100'" [severity]="getScoreSeverity(report.documentationScore)"></p-tag>
+      </div>
+      <div class="score-card">
+        <span class="score-label">Clinical Consistency</span>
+        <p-tag [value]="report.clinicalConsistencyScore + '/100'" [severity]="getScoreSeverity(report.clinicalConsistencyScore)"></p-tag>
+      </div>
+      <div class="score-card">
+        <span class="score-label">Care Plan</span>
+        <p-tag [value]="report.carePlanScore + '/100'" [severity]="getScoreSeverity(report.carePlanScore)"></p-tag>
+      </div>
+      <div class="score-card">
+        <span class="score-label">Insurance Risk</span>
+        <p-tag [value]="report.insuranceRiskScore + '/100'" [severity]="getScoreSeverity(report.insuranceRiskScore)"></p-tag>
+      </div>
+      <div class="score-card highlight">
+        <span class="score-label">Overall Acceptance Rate</span>
+        <span class="big-score" [class]="'score-' + getScoreSeverity(report.overallAcceptanceRate)">
+          {{ report.overallAcceptanceRate }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Detailed Sections Accordion -->
+    <p-accordion [multiple]="true" styleClass="audit-accordion">
+      <p-accordion-panel value="0">
+        <p-accordion-header>
+          <i class="pi pi-file-edit"></i>&nbsp; Documentation Review
+          <p-tag [value]="report.documentationScore + '/100'" [severity]="getScoreSeverity(report.documentationScore)" styleClass="ml-2"></p-tag>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="review-text">{{ report.documentationReview }}</div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <p-accordion-panel value="1">
+        <p-accordion-header>
+          <i class="pi pi-heart"></i>&nbsp; Clinical Consistency
+          <p-tag [value]="report.clinicalConsistencyScore + '/100'" [severity]="getScoreSeverity(report.clinicalConsistencyScore)" styleClass="ml-2"></p-tag>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="review-text">{{ report.clinicalConsistencyReview }}</div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <p-accordion-panel value="2">
+        <p-accordion-header>
+          <i class="pi pi-directions"></i>&nbsp; Care Plan Review
+          <p-tag [value]="report.carePlanScore + '/100'" [severity]="getScoreSeverity(report.carePlanScore)" styleClass="ml-2"></p-tag>
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="review-text">{{ report.carePlanReview }}</div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <p-accordion-panel value="3">
+        <p-accordion-header>
+          <i class="pi pi-shield"></i>&nbsp; Insurance Risk Flags
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="review-text">{{ report.insuranceRiskFlags }}</div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <p-accordion-panel value="4">
+        <p-accordion-header>
+          <i class="pi pi-lightbulb"></i>&nbsp; Suggested Improvements
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="field">
+            <label>Edit Suggested Improvements</label>
+            <textarea pTextarea [(ngModel)]="editedImprovements" rows="6" class="w-full"
+              placeholder="Edit improvements before approval..."></textarea>
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <p-accordion-panel value="5">
+        <p-accordion-header>
+          <i class="pi pi-info-circle"></i>&nbsp; Final Summary & Rationale
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="review-text"><strong>Summary:</strong> {{ report.finalSummary }}</div>
+          <div class="review-text mt-2"><strong>Acceptance Rationale:</strong> {{ report.acceptanceRationale }}</div>
+          <div class="review-text mt-2"><em>Model Used: {{ report.modelUsed }}</em></div>
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <!-- Clinical Recommendations -->
+      <p-accordion-panel value="7"
+        *ngIf="report.recommendedLabs?.length || report.recommendedImaging?.length || report.recommendedProcedures?.length || report.recommendedConsultations?.length">
+        <p-accordion-header>
+          <i class="pi pi-list-check"></i>&nbsp; Clinical Recommendations
+          <p-tag value="Action Required" severity="warn" styleClass="ml-2"></p-tag>
+        </p-accordion-header>
+        <p-accordion-content>
+
+          <!-- Recommended Labs -->
+          <div class="rec-section" *ngIf="report.recommendedLabs?.length">
+            <h4 class="rec-title"><i class="pi pi-flask"></i> Recommended Labs</h4>
+            <div class="rec-list">
+              <div class="rec-item" *ngFor="let item of report.recommendedLabs">
+                <div class="rec-item-header">
+                  <span class="rec-name">{{ item.name }}</span>
+                  <p-tag [value]="item.urgency" [severity]="getUrgencySeverity(item.urgency)"></p-tag>
+                </div>
+                <div class="rec-reason">{{ item.reason }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Imaging -->
+          <div class="rec-section" *ngIf="report.recommendedImaging?.length">
+            <h4 class="rec-title"><i class="pi pi-image"></i> Recommended Imaging / Radiology</h4>
+            <div class="rec-list">
+              <div class="rec-item" *ngFor="let item of report.recommendedImaging">
+                <div class="rec-item-header">
+                  <span class="rec-name">{{ item.name }}</span>
+                  <p-tag [value]="item.urgency" [severity]="getUrgencySeverity(item.urgency)"></p-tag>
+                </div>
+                <div class="rec-reason">{{ item.reason }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Procedures -->
+          <div class="rec-section" *ngIf="report.recommendedProcedures?.length">
+            <h4 class="rec-title"><i class="pi pi-heart-fill"></i> Recommended Procedures</h4>
+            <div class="rec-list">
+              <div class="rec-item" *ngFor="let item of report.recommendedProcedures">
+                <div class="rec-item-header">
+                  <span class="rec-name">{{ item.name }}</span>
+                  <p-tag [value]="item.urgency" [severity]="getUrgencySeverity(item.urgency)"></p-tag>
+                </div>
+                <div class="rec-reason">{{ item.reason }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Consultations -->
+          <div class="rec-section" *ngIf="report.recommendedConsultations?.length">
+            <h4 class="rec-title"><i class="pi pi-users"></i> Recommended Consultations</h4>
+            <div class="rec-list">
+              <div class="rec-item" *ngFor="let item of report.recommendedConsultations">
+                <div class="rec-item-header">
+                  <span class="rec-name">{{ item.name }}</span>
+                  <p-tag [value]="item.urgency" [severity]="getUrgencySeverity(item.urgency)"></p-tag>
+                </div>
+                <div class="rec-reason">{{ item.reason }}</div>
+              </div>
+            </div>
+          </div>
+
+        </p-accordion-content>
+      </p-accordion-panel>
+
+      <!-- Coded Items -->
+      <p-accordion-panel value="6" *ngIf="report.icd10Codes?.length || report.rxNormCodes?.length || report.loincCodes?.length || report.snomedCodes?.length">
+        <p-accordion-header>
+          <i class="pi pi-tag"></i>&nbsp; Coded Items (ICD-10, RxNorm, LOINC, SNOMED)
+        </p-accordion-header>
+        <p-accordion-content>
+          <div class="codes-section" *ngIf="report.icd10Codes?.length">
+            <h4>ICD-10 Codes</h4>
+            <div class="chips-row">
+              <p-chip *ngFor="let c of report.icd10Codes" [label]="c.code + ' - ' + c.display"></p-chip>
+            </div>
+          </div>
+          <div class="codes-section" *ngIf="report.rxNormCodes?.length">
+            <h4>RxNorm Codes</h4>
+            <div class="chips-row">
+              <p-chip *ngFor="let c of report.rxNormCodes" [label]="c.code + ' - ' + c.display"></p-chip>
+            </div>
+          </div>
+          <div class="codes-section" *ngIf="report.loincCodes?.length">
+            <h4>LOINC Codes</h4>
+            <div class="chips-row">
+              <p-chip *ngFor="let c of report.loincCodes" [label]="c.code + ' - ' + c.display"></p-chip>
+            </div>
+          </div>
+          <div class="codes-section" *ngIf="report.snomedCodes?.length">
+            <h4>SNOMED Codes</h4>
+            <div class="chips-row">
+              <p-chip *ngFor="let c of report.snomedCodes" [label]="c.code + ' - ' + c.display"></p-chip>
+            </div>
+          </div>
+        </p-accordion-content>
+      </p-accordion-panel>
+    </p-accordion>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <button pButton label="Approve" icon="pi pi-check" class="p-button-success"
+        (click)="submitApproval('Approve')" [loading]="approving()"></button>
+      <button pButton label="Approve with Edits" icon="pi pi-check-square" class="p-button-info"
+        (click)="submitApproval('ApproveWithEdits')" [loading]="approving()"></button>
+      <button pButton label="Reject" icon="pi pi-times" class="p-button-danger"
+        (click)="submitApproval('Reject')" [loading]="approving()"></button>
+    </div>
+  </div>
+</div>

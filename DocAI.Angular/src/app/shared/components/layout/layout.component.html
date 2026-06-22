@@ -1,0 +1,50 @@
+<div class="layout-wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="pi pi-heart-fill logo-icon"></i>
+        <span class="logo-text">DocAI</span>
+      </div>
+      <p class="logo-subtitle">Healthcare AI Platform</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+            <i class="pi pi-home"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/cases" routerLinkActive="active" class="nav-item">
+            <i class="pi pi-folder"></i>
+            <span>Patient Cases</span>
+          </a>
+        </li>
+        <li>
+          <a routerLink="/cases/new" routerLinkActive="active" class="nav-item">
+            <i class="pi pi-plus-circle"></i>
+            <span>New Case</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info" *ngIf="currentUser$ | async as user">
+        <p-avatar [label]="user.fullName?.charAt(0) || 'U'" shape="circle" styleClass="user-avatar"></p-avatar>
+        <div class="user-details">
+          <span class="user-name">{{ user.fullName }}</span>
+          <span class="user-role">{{ user.role }}</span>
+        </div>
+      </div>
+      <button pButton icon="pi pi-sign-out" class="p-button-text p-button-plain logout-btn"
+        (click)="logout()" pTooltip="Logout"></button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

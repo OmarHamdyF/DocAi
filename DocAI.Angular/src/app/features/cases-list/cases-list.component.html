@@ -1,0 +1,80 @@
+<div class="cases-list-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Patient Cases</h1>
+      <p class="page-subtitle">Manage and review all patient cases</p>
+    </div>
+    <button pButton label="New Case" icon="pi pi-plus" class="p-button-primary" (click)="newCase()"></button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-field">
+      <i class="pi pi-search search-icon"></i>
+      <input pInputText [(ngModel)]="searchTerm" placeholder="Search by patient name or ID..."
+        class="search-input" />
+    </div>
+    <p-select [(ngModel)]="selectedStatus" [options]="statusOptions"
+      placeholder="Filter by status" styleClass="status-filter"></p-select>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-wrapper" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card" *ngIf="!loading()">
+    <p-table [value]="filteredCases" [tableStyle]="{'min-width': '70rem'}"
+      styleClass="p-datatable-sm p-datatable-striped"
+      [paginator]="true" [rows]="pageSize" [totalRecords]="total()"
+      [lazy]="true" (onLazyLoad)="onPageChange($event)">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Patient Name</th>
+          <th>Patient ID</th>
+          <th>Diagnosis</th>
+          <th>Status</th>
+          <th>Physician</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-case>
+        <tr>
+          <td>
+            <div class="patient-name">
+              <i class="pi pi-user"></i>
+              {{ case.patientName }}
+            </div>
+          </td>
+          <td><code>{{ case.patientId }}</code></td>
+          <td>{{ case.provisionalDiagnosis || '-' }}</td>
+          <td>
+            <p-tag [value]="case.status" [severity]="getStatusSeverity(case.status)"></p-tag>
+          </td>
+          <td>{{ case.physicianName || '-' }}</td>
+          <td>{{ case.createdAt | date:'mediumDate' }}</td>
+          <td>
+            <div class="action-btns">
+              <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm"
+                (click)="viewCase(case.id)" pTooltip="Edit Case"></button>
+              <button pButton icon="pi pi-chart-line" class="p-button-text p-button-sm p-button-info"
+                (click)="viewAudit(case.id)" pTooltip="View Audit"></button>
+              <button pButton icon="pi pi-check-circle" class="p-button-text p-button-sm p-button-success"
+                (click)="viewApproval(case.id)" pTooltip="Approval"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="empty-msg">
+            <i class="pi pi-inbox"></i>
+            <p>No cases found matching your criteria.</p>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

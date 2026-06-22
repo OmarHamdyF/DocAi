@@ -1,0 +1,97 @@
+<div class="approval-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Approval Workflow</h1>
+      <p class="page-subtitle" *ngIf="patientCase()">
+        Patient: <strong>{{ patientCase()?.patientName }}</strong> &mdash; {{ patientCase()?.provisionalDiagnosis || 'No diagnosis' }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <button pButton label="View Case" icon="pi pi-eye" class="p-button-outlined"
+        (click)="viewCase()"></button>
+      <button pButton label="View Audit" icon="pi pi-chart-line" class="p-button-outlined p-button-info"
+        (click)="viewAudit()"></button>
+    </div>
+  </div>
+
+  <div class="loading-wrapper" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <div class="content-grid" *ngIf="!loading()">
+
+    <!-- Approval History -->
+    <div class="history-card" *ngIf="approvalHistory().length > 0">
+      <h2 class="section-title">
+        <i class="pi pi-history"></i> Approval History
+      </h2>
+      <p-timeline [value]="approvalHistory()" styleClass="approval-timeline">
+        <ng-template pTemplate="content" let-record>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <p-tag [value]="record.action" [severity]="getActionSeverity(record.action)"></p-tag>
+              <span class="timeline-date">{{ record.createdAt | date:'medium' }}</span>
+            </div>
+            <div class="timeline-by" *ngIf="record.createdBy">by {{ record.createdBy }}</div>
+            <div class="timeline-comments" *ngIf="record.comments">
+              <strong>Comments:</strong> {{ record.comments }}
+            </div>
+            <div class="timeline-improvements" *ngIf="record.approvedImprovements">
+              <strong>Approved Improvements:</strong> {{ record.approvedImprovements }}
+            </div>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="opposite" let-record>
+          <span></span>
+        </ng-template>
+      </p-timeline>
+    </div>
+
+    <!-- Approval Form -->
+    <div class="form-card" *ngIf="showForm()">
+      <h2 class="section-title">
+        <i class="pi pi-send"></i> Submit Decision
+      </h2>
+
+      <form [formGroup]="approvalForm" (ngSubmit)="submitApproval()">
+        <div class="field">
+          <label>Decision <span class="required">*</span></label>
+          <p-select formControlName="action" [options]="actionOptions"
+            placeholder="Select action" styleClass="w-full"></p-select>
+          <small class="error-msg" *ngIf="approvalForm.get('action')?.invalid && approvalForm.get('action')?.touched">
+            Please select a decision
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Comments <span class="required">*</span></label>
+          <textarea pTextarea formControlName="comments" rows="4" class="w-full"
+            placeholder="Provide your review comments and reasoning..."></textarea>
+          <small class="error-msg" *ngIf="approvalForm.get('comments')?.invalid && approvalForm.get('comments')?.touched">
+            Comments are required
+          </small>
+        </div>
+
+        <div class="field">
+          <label>Approved Improvements</label>
+          <textarea pTextarea formControlName="approvedImprovements" rows="4" class="w-full"
+            placeholder="List any approved improvements or modifications..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button pButton type="submit" label="Submit Decision" icon="pi pi-send"
+            class="p-button-primary" [loading]="submitting()"
+            [disabled]="approvalForm.invalid || submitting()"></button>
+        </div>
+      </form>
+    </div>
+
+    <!-- No Action Needed -->
+    <div class="completed-card" *ngIf="!showForm() && approvalHistory().length > 0">
+      <i class="pi pi-check-circle completed-icon"></i>
+      <h2>Decision Recorded</h2>
+      <p>This case has been reviewed. See the history above for details.</p>
+    </div>
+
+  </div>
+</div>

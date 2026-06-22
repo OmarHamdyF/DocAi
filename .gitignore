@@ -1,0 +1,25 @@
+# .NET
+**/obj/
+**/bin/
+*.user
+*.suo
+.vs/
+
+# Migrations (keep the folder, ignore lock files)
+# DocAI.API/Migrations/ — tracked
+
+# Secrets (NEVER commit these)
+appsettings.Production.json
+appsettings.Secrets.json
+
+# Angular
+DocAI.Angular/node_modules/
+DocAI.Angular/dist/
+DocAI.Angular/.angular/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

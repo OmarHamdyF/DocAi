@@ -1,0 +1,171 @@
+<div class="case-form-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ caseId() ? 'Edit Patient Case' : 'New Patient Case' }}</h1>
+      <p class="page-subtitle">Enter comprehensive patient information for AI audit</p>
+    </div>
+    <div class="header-actions">
+      <button pButton label="Cancel" icon="pi pi-times" class="p-button-outlined p-button-secondary"
+        (click)="cancel()"></button>
+      <button pButton label="Save Draft" icon="pi pi-save" class="p-button-outlined"
+        (click)="saveDraft()" [loading]="saving()"></button>
+      <button pButton label="Save & Generate Audit" icon="pi pi-bolt" class="p-button-primary"
+        (click)="saveAndGenerateAudit()" [loading]="saving()"></button>
+    </div>
+  </div>
+
+  <div class="loading-wrapper" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <form [formGroup]="caseForm" *ngIf="!loading()">
+    <p-tabs [value]="0">
+      <p-tablist>
+        <p-tab [value]="0"><i class="pi pi-user tab-icon"></i> Patient Info</p-tab>
+        <p-tab [value]="1"><i class="pi pi-heart tab-icon"></i> Chief Complaint</p-tab>
+        <p-tab [value]="2"><i class="pi pi-eye tab-icon"></i> Examination</p-tab>
+        <p-tab [value]="3"><i class="pi pi-directions tab-icon"></i> Orders</p-tab>
+        <p-tab [value]="4"><i class="pi pi-chart-line tab-icon"></i> Results</p-tab>
+        <p-tab [value]="5"><i class="pi pi-history tab-icon"></i> History</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <!-- Tab 1: Patient Info -->
+        <p-tabpanel [value]="0">
+          <div class="tab-content">
+            <div class="form-grid two-col">
+              <div class="field">
+                <label>Patient ID <span class="required">*</span></label>
+                <input pInputText formControlName="patientId" placeholder="e.g. P-12345" class="w-full" />
+                <small class="error-msg" *ngIf="caseForm.get('patientId')?.invalid && caseForm.get('patientId')?.touched">Patient ID is required</small>
+              </div>
+              <div class="field">
+                <label>Patient Name <span class="required">*</span></label>
+                <input pInputText formControlName="patientName" placeholder="Full name" class="w-full" />
+                <small class="error-msg" *ngIf="caseForm.get('patientName')?.invalid && caseForm.get('patientName')?.touched">Patient name is required</small>
+              </div>
+              <div class="field">
+                <label>Age <span class="required">*</span></label>
+                <input pInputText type="number" formControlName="patientAge" placeholder="Age in years" class="w-full" />
+                <small class="error-msg" *ngIf="caseForm.get('patientAge')?.invalid && caseForm.get('patientAge')?.touched">Valid age is required</small>
+              </div>
+              <div class="field">
+                <label>Gender <span class="required">*</span></label>
+                <p-select formControlName="patientGender" [options]="genderOptions"
+                  placeholder="Select gender" styleClass="w-full"></p-select>
+                <small class="error-msg" *ngIf="caseForm.get('patientGender')?.invalid && caseForm.get('patientGender')?.touched">Gender is required</small>
+              </div>
+              <div class="field">
+                <label>Physician Name</label>
+                <input pInputText formControlName="physicianName" placeholder="Attending physician" class="w-full" />
+              </div>
+              <div class="field">
+                <label>Status</label>
+                <p-select formControlName="status" [options]="statusOptions"
+                  placeholder="Select status" styleClass="w-full"></p-select>
+              </div>
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- Tab 2: Chief Complaint -->
+        <p-tabpanel [value]="1">
+          <div class="tab-content">
+            <div class="field">
+              <label>Chief Complaint <span class="required">*</span></label>
+              <textarea pTextarea formControlName="chiefComplaint" rows="4"
+                placeholder="Patient's main complaint or reason for visit" class="w-full"></textarea>
+              <small class="error-msg" *ngIf="caseForm.get('chiefComplaint')?.invalid && caseForm.get('chiefComplaint')?.touched">Chief complaint is required</small>
+            </div>
+            <div class="field">
+              <label>History of Present Illness (HoPI)</label>
+              <textarea pTextarea formControlName="hopi" rows="6"
+                placeholder="Detailed history of present illness" class="w-full"></textarea>
+            </div>
+            <div class="field">
+              <label>Medications Prescribed</label>
+              <textarea pTextarea formControlName="medicationsPrescribed" rows="4"
+                placeholder="List prescribed medications with dosage" class="w-full"></textarea>
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- Tab 3: Examination -->
+        <p-tabpanel [value]="2">
+          <div class="tab-content">
+            <div class="field">
+              <label>Physical Examination</label>
+              <textarea pTextarea formControlName="physicalExam" rows="6"
+                placeholder="Physical examination findings" class="w-full"></textarea>
+            </div>
+            <div class="field">
+              <label>Progress Note</label>
+              <textarea pTextarea formControlName="progressNote" rows="6"
+                placeholder="Progress notes and observations" class="w-full"></textarea>
+            </div>
+            <div class="field">
+              <label>Provisional Diagnosis</label>
+              <textarea pTextarea formControlName="provisionalDiagnosis" rows="4"
+                placeholder="Provisional diagnosis based on examination" class="w-full"></textarea>
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- Tab 4: Orders -->
+        <p-tabpanel [value]="3">
+          <div class="tab-content">
+            <div class="form-grid two-col">
+              <div class="field">
+                <label>Labs Requested</label>
+                <textarea pTextarea formControlName="labsRequested" rows="5"
+                  placeholder="Laboratory tests ordered" class="w-full"></textarea>
+              </div>
+              <div class="field">
+                <label>Imaging Requested</label>
+                <textarea pTextarea formControlName="imagingRequested" rows="5"
+                  placeholder="Imaging studies ordered" class="w-full"></textarea>
+              </div>
+              <div class="field">
+                <label>Procedures Requested</label>
+                <textarea pTextarea formControlName="proceduresRequested" rows="5"
+                  placeholder="Procedures ordered" class="w-full"></textarea>
+              </div>
+              <div class="field">
+                <label>Medication Dispensed</label>
+                <textarea pTextarea formControlName="medicationDispensed" rows="5"
+                  placeholder="Medications dispensed to patient" class="w-full"></textarea>
+              </div>
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- Tab 5: Results -->
+        <p-tabpanel [value]="4">
+          <div class="tab-content">
+            <div class="field">
+              <label>Lab Results</label>
+              <textarea pTextarea formControlName="labResults" rows="6"
+                placeholder="Laboratory results and interpretations" class="w-full"></textarea>
+            </div>
+            <div class="field">
+              <label>Imaging Results</label>
+              <textarea pTextarea formControlName="imagingResults" rows="6"
+                placeholder="Imaging study results and findings" class="w-full"></textarea>
+            </div>
+          </div>
+        </p-tabpanel>
+
+        <!-- Tab 6: History -->
+        <p-tabpanel [value]="5">
+          <div class="tab-content">
+            <div class="field">
+              <label>Previous Visits</label>
+              <textarea pTextarea formControlName="previousVisits" rows="8"
+                placeholder="Summary of previous medical visits and relevant history" class="w-full"></textarea>
+            </div>
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </form>
+</div>

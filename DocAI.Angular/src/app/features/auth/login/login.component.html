@@ -1,0 +1,159 @@
+<div class="login-container">
+  <div class="login-card">
+
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo">
+        <i class="pi pi-heart-fill"></i>
+        <h1>DocAI</h1>
+      </div>
+      <p class="subtitle">Healthcare AI Documentation Platform</p>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div class="mode-tabs">
+      <button class="tab-btn" [class.active]="!isRegisterMode()" (click)="isRegisterMode() && toggleMode()">
+        <i class="pi pi-sign-in"></i> Sign In
+      </button>
+      <button class="tab-btn" [class.active]="isRegisterMode()" (click)="!isRegisterMode() && toggleMode()">
+        <i class="pi pi-user-plus"></i> Register
+      </button>
+    </div>
+
+    <!-- ── LOGIN FORM ── -->
+    <form *ngIf="!isRegisterMode()" [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form">
+      <div class="field">
+        <label for="email">Email Address</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-envelope"></i></span>
+          <input id="email" type="email" pInputText formControlName="email"
+            placeholder="Enter your email" class="w-full" />
+        </div>
+        <small class="error-msg"
+          *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Please enter a valid email address.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-lock"></i></span>
+          <p-password id="password" formControlName="password"
+            placeholder="Enter your password" [feedback]="false"
+            [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+        </div>
+        <small class="error-msg"
+          *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password must be at least 6 characters.
+        </small>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage()">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <button pButton type="submit" label="Sign In" icon="pi pi-sign-in"
+        class="w-full login-btn" [loading]="loading()"
+        [disabled]="loginForm.invalid || loading()"></button>
+
+      <p class="switch-link">
+        Don't have an account?
+        <a (click)="toggleMode()">Register here</a>
+      </p>
+    </form>
+
+    <!-- ── REGISTER FORM ── -->
+    <form *ngIf="isRegisterMode()" [formGroup]="registerForm" (ngSubmit)="onRegister()" class="login-form">
+
+      <div class="field">
+        <label for="fullName">Full Name</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-id-card"></i></span>
+          <input id="fullName" type="text" pInputText formControlName="fullName"
+            placeholder="Dr. John Smith" class="w-full" />
+        </div>
+        <small class="error-msg"
+          *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">
+          Full name is required.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-user"></i></span>
+          <input id="username" type="text" pInputText formControlName="username"
+            placeholder="drjohnsmith" class="w-full" />
+        </div>
+        <small class="error-msg"
+          *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+          Username is required (min 3 characters).
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="reg-email">Email Address</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-envelope"></i></span>
+          <input id="reg-email" type="email" pInputText formControlName="email"
+            placeholder="doctor@hospital.com" class="w-full" />
+        </div>
+        <small class="error-msg"
+          *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          Please enter a valid email.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="department">Department</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-building"></i></span>
+          <input id="department" type="text" pInputText formControlName="department"
+            placeholder="e.g. Cardiology, Emergency" class="w-full" />
+        </div>
+        <small class="error-msg"
+          *ngIf="registerForm.get('department')?.invalid && registerForm.get('department')?.touched">
+          Department is required.
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="role">Role</label>
+      <p-select id="role" formControlName="role" [options]="roles"
+          optionLabel="label" optionValue="value"
+          placeholder="Select role" styleClass="w-full"></p-select>
+      </div>
+
+      <div class="field">
+        <label for="reg-password">Password</label>
+        <div class="p-inputgroup">
+          <span class="p-inputgroup-addon"><i class="pi pi-lock"></i></span>
+          <p-password id="reg-password" formControlName="password"
+            placeholder="Min. 6 characters" [feedback]="true"
+            [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full"></p-password>
+        </div>
+        <small class="error-msg"
+          *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          Password must be at least 6 characters.
+        </small>
+      </div>
+
+      <div class="error-banner" *ngIf="errorMessage()">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>{{ errorMessage() }}</span>
+      </div>
+
+      <button pButton type="submit" label="Create Account" icon="pi pi-user-plus"
+        class="w-full login-btn" [loading]="loading()"
+        [disabled]="registerForm.invalid || loading()"></button>
+
+      <p class="switch-link">
+        Already have an account?
+        <a (click)="toggleMode()">Sign in here</a>
+      </p>
+    </form>
+
+  </div>
+</div>
